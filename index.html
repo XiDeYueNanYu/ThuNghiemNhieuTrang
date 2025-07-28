@@ -32,7 +32,7 @@
 </head>
 <body>
     <div class="video-container">
-        <video id="myVideo" autoplay loop muted playsinline>
+        <video id="myVideo" autoplay loop muted playsinline webkit-playsinline x5-playsinline x-webkit-airplay="allow">
             <source src="your-video.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
@@ -41,20 +41,39 @@
         document.addEventListener('DOMContentLoaded', function() {
             const video = document.getElementById('myVideo');
             
-            // Ensure video plays on mobile devices
-            video.setAttribute('playsinline', '');
+            // Thêm các thuộc tính đặc biệt cho Weixin
+            video.setAttribute('playsinline', 'true');
+            video.setAttribute('webkit-playsinline', 'true');
+            video.setAttribute('x5-playsinline', 'true');
+            video.setAttribute('x5-video-player-type', 'h5');
+            video.setAttribute('x5-video-orientation', 'portraint');
+            video.setAttribute('x-webkit-airplay', 'allow');
             
-            // Handle video playback errors
+            // Thử phát video bằng JavaScript sau khi tương tác người dùng
+            function tryPlayVideo() {
+                const promise = video.play();
+                if (promise !== undefined) {
+                    promise.catch(error => {
+                        // Tự động phát bị chặn, yêu cầu tương tác người dùng
+                        document.body.addEventListener('click', function once() {
+                            video.play();
+                            document.body.removeEventListener('click', once);
+                        });
+                    });
+                }
+            }
+            
+            // Thử phát video khi có thể
+            tryPlayVideo();
+            
+            // Xử lý lỗi phát video
             video.addEventListener('error', function(e) {
                 console.error('Video playback error:', e);
+                // Thử lại sau 1 giây
+                setTimeout(tryPlayVideo, 1000);
             });
             
-            // Replay video when it ends (redundant with loop attribute, but added for robustness)
-            video.addEventListener('ended', function() {
-                video.play();
-            });
-            
-            // Adjust video container size on window resize
+            // Điều chỉnh kích thước khi cửa sổ thay đổi
             window.addEventListener('resize', function() {
                 const container = document.querySelector('.video-container');
                 container.style.maxWidth = window.innerWidth + 'px';
