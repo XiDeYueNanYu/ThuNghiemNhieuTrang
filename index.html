@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Video Player</title>
+    <title>Video và Âm thanh Player</title>
     <style>
         body {
             margin: 0;
@@ -28,20 +28,33 @@
             height: 100%;
             object-fit: contain;
         }
+        /* Ẩn audio element nhưng vẫn phát */
+        audio {
+            display: none;
+        }
     </style>
 </head>
 <body>
+    <!-- Video Player -->
     <div class="video-container">
         <video id="myVideo" autoplay loop muted playsinline webkit-playsinline x5-playsinline x-webkit-airplay="allow">
             <source src="your-video.mp4" type="video/mp4">
-            Your browser does not support the video tag.
+            Trình duyệt không hỗ trợ thẻ video.
         </video>
     </div>
+    
+    <!-- Audio Player (ẩn) -->
+    <audio id="myAudio" autoplay loop>
+        <source src="audio.mp3" type="audio/mpeg">
+        Trình duyệt không hỗ trợ thẻ audio.
+    </audio>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const video = document.getElementById('myVideo');
+            const audio = document.getElementById('myAudio');
             
-            // Thêm các thuộc tính đặc biệt cho Weixin
+            // Cấu hình video cho Weixin
             video.setAttribute('playsinline', 'true');
             video.setAttribute('webkit-playsinline', 'true');
             video.setAttribute('x5-playsinline', 'true');
@@ -49,34 +62,26 @@
             video.setAttribute('x5-video-orientation', 'portraint');
             video.setAttribute('x-webkit-airplay', 'allow');
             
-            // Thử phát video bằng JavaScript sau khi tương tác người dùng
-            function tryPlayVideo() {
-                const promise = video.play();
-                if (promise !== undefined) {
-                    promise.catch(error => {
-                        // Tự động phát bị chặn, yêu cầu tương tác người dùng
-                        document.body.addEventListener('click', function once() {
-                            video.play();
-                            document.body.removeEventListener('click', once);
-                        });
-                    });
-                }
+            // Hàm thử phát media đơn giản
+            function tryPlayMedia() {
+                // Thử phát video
+                video.play().catch(e => {
+                    console.log('Tự động phát video bị chặn:', e);
+                });
+                
+                // Thử phát audio
+                audio.play().catch(e => {
+                    console.log('Tự động phát audio bị chặn:', e);
+                });
             }
             
-            // Thử phát video khi có thể
-            tryPlayVideo();
+            // Bắt đầu phát
+            tryPlayMedia();
             
-            // Xử lý lỗi phát video
-            video.addEventListener('error', function(e) {
-                console.error('Video playback error:', e);
-                // Thử lại sau 1 giây
-                setTimeout(tryPlayVideo, 1000);
-            });
-            
-            // Điều chỉnh kích thước khi cửa sổ thay đổi
-            window.addEventListener('resize', function() {
-                const container = document.querySelector('.video-container');
-                container.style.maxWidth = window.innerWidth + 'px';
+            // Kích hoạt phát khi người dùng tương tác (nếu cần)
+            document.addEventListener('click', function() {
+                video.play().catch(e => console.log(e));
+                audio.play().catch(e => console.log(e));
             });
         });
     </script>
